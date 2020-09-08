@@ -44,7 +44,7 @@ const userSchemer = new Schema(
     },
     created : {
       type : Date,
-      defaultValue : new Date()
+      defaultValue : Date.now
     }
   },
 

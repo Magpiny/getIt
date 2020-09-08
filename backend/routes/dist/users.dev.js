@@ -14,7 +14,14 @@ var User = require('../models/User');
 
 users.use(cors());
 process.env.SECRET_KEY = 'secret';
-users.post('/register', function (req, res) {
+user.route('/').get(function (req, res) {
+  User.find().then(function (users) {
+    return res.json(users);
+  })["catch"](function (err) {
+    return res.status(400).json('Error : ' + err);
+  });
+});
+users.route('/register').post(function (req, res) {
   var today = new Date();
   var userData = {
     first_name: req.body.first_name,
@@ -24,7 +31,7 @@ users.post('/register', function (req, res) {
     age: req.body.age,
     password: req.body.password
   };
-  User.findOne({
+  User.find({
     where: {
       email: req.body.email
     }
@@ -50,7 +57,7 @@ users.post('/register', function (req, res) {
   });
 }); //login
 
-users.post('/login', function (req, res) {
+users.route("/login").post(function (req, res) {
   User.findOne({
     where: {
       email: req.body.email
@@ -65,7 +72,7 @@ users.post('/login', function (req, res) {
       }
     } else {
       res.status(400).json({
-        error: 'User does not exist'
+        error: "User does not exist"
       });
     }
   })["catch"](function (err) {

@@ -9,12 +9,18 @@ users.use(cors())
 
 process.env.SECRET_KEY = 'secret'
 
+user.route('/').get((req, res) => {
+    User.find()
+       .then(users => res.json(users))
+       .catch(err => res.status(400).json('Error : '+err))
+})
 
-users.post(
-    '/register', (req, res) => {
+
+users.route('/register').post(
+    (req, res) => {
         const today = new Date()
         const userData = {
-            first_name : req.body.first_name,
+           first_name: req.body.first_name,
             last_name  : req.body.last_name,
             username   : req.body.username,
             email      : req.body.email,
@@ -23,7 +29,7 @@ users.post(
             
         }
 
-        User.findOne({
+        User.find({
             where: {
                 email : req.body.email
             }
@@ -56,34 +62,28 @@ users.post(
 
 //login
 
-users.post('/login', (req, res) => {
-    User.findOne({
-        where: {
-            email: req.body.email
+users.route("/login").post((req, res) => {
+  User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  })
+    .then((user) => {
+      if (user) {
+        if (bcrypt.compareSync(req.body.password, user.password)) {
+          let token = jwt.sign(user.dataValues, process.env.SECRET_KEY, {
+            expiresIn: 1500,
+          });
+          res.send(token);
         }
+      } else {
+        res.status(400).json({ error: "User does not exist" });
+      }
     })
-    .then(user => {
-      if (user){
-          if(bcrypt.compareSync(req.body.password, user.password)){
-            let token = jwt.sign(user.dataValues, process.env.SECRET_KEY,{
-                expiresIn:1500
-            })
-            res.send(token)
-        }
-    
-
-      } 
-      else{
-        res.status(400).json({error : 'User does not exist' }) 
-         }  
-        
-})
-.catch(err => {
-    res.status(400).json({ error : err})
-})
-
-
-})
+    .catch((err) => {
+      res.status(400).json({ error: err });
+    });
+});
 
 
 module.exports = users
